@@ -2,7 +2,8 @@ import java.util.ArrayList;
 
 public class ChessBoard{
 
-    
+
+    private Game game;
 
     ChessBoardSquare A1 = new ChessBoardSquare(ChessBoardSquare.Color.BROWN, ChessBoardSquare.ID.A1);
     ChessBoardSquare A2 = new ChessBoardSquare(ChessBoardSquare.Color.WHITE, ChessBoardSquare.ID.A2);
@@ -77,7 +78,11 @@ public class ChessBoard{
     ChessBoardSquare H8 = new ChessBoardSquare(ChessBoardSquare.Color.BROWN, ChessBoardSquare.ID.H8);
     
     
-    public ChessBoard(boolean startup) {
+    public ChessBoard(boolean startup, Game game) {
+
+        this.game = game;
+
+
         //ROW 8
         A8.setEast(B8);
         A8.setSouth(A7);
@@ -262,11 +267,12 @@ public class ChessBoard{
         G1.setEast(H1);
 
         if (startup) {
+
             A8.setPiece(new Rook(this, A8, ChessPiece.Color.BLACK));
             B8.setPiece(new Knight(this, B8, ChessPiece.Color.BLACK));
             C8.setPiece(new Bishop(this, C8, ChessPiece.Color.BLACK));
             D8.setPiece(new Queen(this, D8, ChessPiece.Color.BLACK));
-            E8.setPiece(new King(this, E8, ChessPiece.Color.BLACK));
+            E8.setPiece(new King(this,E8, ChessPiece.Color.BLACK));
             F8.setPiece(new Bishop(this, F8, ChessPiece.Color.BLACK));
             G8.setPiece(new Knight(this, G8, ChessPiece.Color.BLACK));
             H8.setPiece(new Rook(this, H8, ChessPiece.Color.BLACK));
@@ -301,22 +307,48 @@ public class ChessBoard{
     }
     
 
+    public ChessBoardSquare getSquare(ChessBoardSquare.ID id) {
 
-    public void traverseBoard(Visitor visitor) {
+        ChessBoardSquare[] arr = new ChessBoardSquare[1];
+        traverseBoardForward(s -> {
+            if (s.getId().equals(id)) {
+                arr[0] = s;
+            }
+        });
+        return arr[0];
+    }
+
+    public void traverseBoardForward(Visitor squareVisitor) {
         ChessBoardSquare currentSquare = A8;
         ChessBoardSquare currentRowHead = A8;
 
         while (currentRowHead != null) {
 
             while (currentSquare != null) {
-                visitor.visit(currentSquare);
+                squareVisitor.visit(currentSquare);
                 currentSquare = currentSquare.getEast();
             }
             currentRowHead = currentRowHead.getSouth();
             currentSquare = currentRowHead;
         }
     }
-    public void traverseBoard(Visitor rowVisitor, Visitor squareVisitor) {
+
+    public void traverseBoardBackward(Visitor squareVisitor) {
+        ChessBoardSquare currentSquare = H1;
+        ChessBoardSquare currentRowHead = H1;
+
+        while (currentRowHead != null) {
+
+            while (currentSquare != null) {
+                squareVisitor.visit(currentSquare);
+                currentSquare = currentSquare.getWest();
+            }
+            currentRowHead = currentRowHead.getNorth();
+            currentSquare = currentRowHead;
+        }
+    }
+    
+    public void traverseBoardForward(Visitor rowVisitor, Visitor squareVisitor) {
         ChessBoardSquare currentSquare = A8;
         ChessBoardSquare currentRowHead = A8;
 
@@ -332,10 +364,30 @@ public class ChessBoard{
         }
     }
 
+    public void traverseBoardBackward(Visitor rowVisitor, Visitor squareVisitor) {
+        ChessBoardSquare currentSquare = A1;
+        ChessBoardSquare currentRowHead = A1;
+
+        while (currentRowHead != null) {
+
+            while (currentSquare != null) {
+                squareVisitor.visit(currentSquare);
+                currentSquare = currentSquare.getEast();
+            }
+            rowVisitor.visit(currentRowHead);
+            currentRowHead = currentRowHead.getNorth();
+            currentSquare = currentRowHead;
+        }
+    }
+
+    public Game getGame() {
+        return game;
+    }
+
     public String toString() {
         StringBuilder str = new StringBuilder();
 
-        this.traverseBoard(r -> {str.append("\n");}, s -> {
+        this.traverseBoardForward(r -> {str.append("\n");}, s -> {
             str.append(s.toString()).append(", ");});
         return str.toString();
     }
@@ -343,7 +395,26 @@ public class ChessBoard{
     public void printBoard() {
         StringBuilder str = new StringBuilder();
 
-        this.traverseBoard(r -> {str.append("\n");}, s -> {
+        this.traverseBoardForward(r -> {str.append("\n");}, s -> {
+            if (s.hasPiece()) {
+                str.append(s.getPiece().printable).append("  ");
+            }
+            else str.append("x").append("  ");
+
+            if (!s.hasEast()) str.append("").append(s.getId().toString().substring(1));
+        });
+
+        str.append("A  B  C  D  E  F  G  H");
+
+        System.out.println(str);
+
+
+    }
+
+    public void printBoardR() {
+        StringBuilder str = new StringBuilder();
+
+        this.traverseBoardBackward(r -> {str.append("\n");}, s -> {
             if (s.hasPiece()) {
                 str.append(s.getPiece().printable).append("  ");
             }

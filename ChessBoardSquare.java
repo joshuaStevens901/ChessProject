@@ -32,13 +32,8 @@ public class ChessBoardSquare {
     public ChessPiece getPiece() {
         return piece;
     }
-    public void setPiece(ChessPiece newPiece) {
-
-        piece = newPiece;
-        if (newPiece.getCurrentSqaure() != this) newPiece.setCurrentSqaure(this);
-    }
-    public void removePiece() {
-        setPiece(null);
+    public void setPiece(ChessPiece piece) {
+        this.piece = piece;
     }
 
     public ID getId() {
@@ -48,6 +43,17 @@ public class ChessBoardSquare {
     public ChessBoardSquare getNorth() {
         return north;
     }
+
+    public ChessBoardSquare getForward(ChessPiece.Color color) {
+        if (color.equals(ChessPiece.Color.WHITE)) return getNorth();
+        else return getSouth();
+    }
+
+    public boolean hasForward(ChessPiece.Color color) {
+        if (color.equals(ChessPiece.Color.WHITE)) return hasNorth();
+        else return hasSouth();
+    }
+
     public void setNorth(ChessBoardSquare north) {
         this.north = north;
         if (north.getSouth() != this) north.setSouth(this);
